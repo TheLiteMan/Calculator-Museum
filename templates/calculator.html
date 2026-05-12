@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="text-center mb-0">Калькулятор</h3>
+            </div>
+            <div class="card-body">
+                <form id="calculatorForm">
+                    <div class="form-group">
+                        <label for="display">Результат</label>
+                        <input type="text" class="form-control form-control-lg text-right" id="display" 
+                               readonly style="font-size: 24px; font-family: monospace;" value="0">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('7')">7</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('8')">8</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('9')">9</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-warning btn-block btn-lg" onclick="setOperator('/')">÷</button>
+                        </div>
+                        
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('4')">4</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('5')">5</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('6')">6</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-warning btn-block btn-lg" onclick="setOperator('*')">×</button>
+                        </div>
+                        
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('1')">1</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('2')">2</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('3')">3</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-warning btn-block btn-lg" onclick="setOperator('-')">-</button>
+                        </div>
+                        
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('0')">0</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-secondary btn-block btn-lg" onclick="appendNumber('.')">.</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-success btn-block btn-lg" onclick="calculate()">=</button>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-warning btn-block btn-lg" onclick="setOperator('+')">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-danger btn-block btn-lg" onclick="clearDisplay()">C</button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-info btn-block btn-lg" onclick="clearAll()">AC</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">История вычислений</h5>
+                <div id="history" style="max-height: 150px; overflow-y: auto;">
+                    <p class="text-muted text-center">Пока нет вычислений</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="clearHistory()">Очистить историю</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentNumber = '';
+let previousNumber = '';
+let operation = null;
+let shouldResetDisplay = false;
+
+function updateDisplay(value) {
+    const display = document.getElementById('display');
+    display.value = value;
+}
+
+function appendNumber(number) {
+    const display = document.getElementById('display');
+    
+    if (shouldResetDisplay) {
+        currentNumber = '';
+        shouldResetDisplay = false;
+    }
+    
+    if (number === '.' && currentNumber.includes('.')) {
+        return;
+    }
+    
+    currentNumber += number;
+    updateDisplay(currentNumber);
+}
+
+function setOperator(op) {
+    if (currentNumber === '') return;
+    
+    if (previousNumber !== '') {
+        calculate();
+    }
+    
+    operation = op;
+    previousNumber = currentNumber;
+    currentNumber = '';
+    shouldResetDisplay = false;
+}
+
+function calculate() {
+    if (previousNumber === '' || currentNumber === '' || operation === null) {
+        return;
+    }
+    
+    let result;
+    const prev = parseFloat(previousNumber);
+    const current = parseFloat(currentNumber);
+    
+    switch(operation) {
+        case '+':
+            result = prev + current;
+            break;
+        case '-':
+            result = prev - current;
+            break;
+        case '*':
+            result = prev * current;
+            break;
+        case '/':
+            if (current === 0) {
+                alert('Ошибка: Деление на ноль!');
+                clearAll();
+                return;
+            }
+            result = prev / current;
+            break;
+        default:
+            return;
+    }
+    
+    // Форматируем результат
+    result = parseFloat(result.toFixed(10));
+    
+    // Сохраняем в историю
+    addToHistory(`${previousNumber} ${getOperatorSymbol(operation)} ${currentNumber} = ${result}`);
+    
+    // Обновляем дисплей и переменные
+    updateDisplay(result);
+    previousNumber = '';
+    currentNumber = result.toString();
+    operation = null;
+    shouldResetDisplay = true;
+}
+
+function getOperatorSymbol(op) {
+    const symbols = {
+        '+': '+',
+        '-': '-',
+        '*': '×',
+        '/': '÷'
+    };
+    return symbols[op] || op;
+}
+
+function clearDisplay() {
+    currentNumber = '';
+    updateDisplay('0');
+}
+
+function clearAll() {
+    currentNumber = '';
+    previousNumber = '';
+    operation = null;
+    updateDisplay('0');
+    shouldResetDisplay = false;
+}
+
+function addToHistory(calculation) {
+    const historyDiv = document.getElementById('history');
+    
+    // Удаляем сообщение "Пока нет вычислений", если оно есть
+    if (historyDiv.innerHTML.includes('Пока нет вычислений')) {
+        historyDiv.innerHTML = '';
+    }
+    
+    const historyItem = document.createElement('div');
+    historyItem.className = 'alert alert-secondary alert-sm mb-1';
+    historyItem.style.padding = '5px 10px';
+    historyItem.style.fontSize = '14px';
+    historyItem.innerHTML = `
+        ${calculation}
+        <button type="button" class="close" style="font-size: 16px;" onclick="this.parentElement.remove()">×</button>
+    `;
+    historyDiv.prepend(historyItem);
+    
+    // Ограничиваем историю 20 записями
+    while (historyDiv.children.length > 20) {
+        historyDiv.removeChild(historyDiv.lastChild);
+    }
+}
+
+function clearHistory() {
+    const historyDiv = document.getElementById('history');
+    historyDiv.innerHTML = '<p class="text-muted text-center">Пока нет вычислений</p>';
+}
+
+// Добавляем поддержку клавиатуры
+document.addEventListener('keydown', function(event) {
+    const key = event.key;
+    
+    if (key >= '0' && key <= '9') {
+        appendNumber(key);
+    } else if (key === '.') {
+        appendNumber('.');
+    } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+        setOperator(key);
+    } else if (key === 'Enter' || key === '=') {
+        calculate();
+    } else if (key === 'Escape' || key === 'c' || key === 'C') {
+        clearAll();
+    } else if (key === 'Backspace') {
+        // Удаление последнего символа
+        if (currentNumber.length > 0) {
+            currentNumber = currentNumber.slice(0, -1);
+            updateDisplay(currentNumber || '0');
+        }
+    }
+});
+</script>
+
+<style>
+.btn-lg {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#display {
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+}
+
+button:hover {
+    transform: scale(0.98);
+    transition: transform 0.1s;
+}
+
+.alert-sm .close {
+    line-height: 1;
+}
+</style>
+{% endblock %}

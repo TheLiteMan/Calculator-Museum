@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <!-- Боковая панель со списком статей -->
+        <div class="list-group">
+            <h3>Список статей</h3>
+            <div id="articles-list" class="list-group">
+                <!-- Список статей будет загружен динамически -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <!-- Основная область для отображения содержимого статьи -->
+        <div id="article-content" class="card">
+            <div class="card-body text-center text-muted">
+                <h3>Выберите статью для просмотра</h3>
+                <p>Нажмите на название статьи в списке слева</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .list-group-item {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+    }
+    
+    .list-group-item.active {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    
+    #article-content {
+        min-height: 400px;
+        padding: 20px;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 50px;
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<script>
+    // Список доступных статей
+    const articles = [
+        { id: 1, title: "История калькуляторов", file: "articles/history.html" },
+        { id: 2, title: "Механические калькуляторы", file: "articles/mechanical.html" },
+        { id: 3, title: "Электронные калькуляторы", file: "articles/electronic.html" },
+        { id: 4, title: "Современные калькуляторы", file: "articles/modern.html" },
+        { id: 5, title: "Будущее вычислительных устройств", file: "articles/future.html" }
+    ];
+    
+    // Функция для загрузки списка статей
+    function loadArticlesList() {
+        const articlesList = document.getElementById('articles-list');
+        articlesList.innerHTML = '';
+        
+        articles.forEach(article => {
+            const articleItem = document.createElement('a');
+            articleItem.href = '#';
+            articleItem.className = 'list-group-item list-group-item-action';
+            articleItem.innerHTML = `
+                <h5>${article.title}</h5>
+                <small class="text-muted">ID: ${article.id}</small>
+            `;
+            
+            articleItem.onclick = (e) => {
+                e.preventDefault();
+                loadArticle(article);
+                // Убираем активный класс со всех элементов
+                document.querySelectorAll('.list-group-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                articleItem.classList.add('active');
+            };
+            
+            articlesList.appendChild(articleItem);
+        });
+    }
+    
+    // Функция для загрузки содержимого статьи
+    function loadArticle(article) {
+        const articleContent = document.getElementById('article-content');
+        
+        // Показываем индикатор загрузки
+        articleContent.innerHTML = `
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p class="mt-3">Загрузка статьи "${article.title}"...</p>
+            </div>
+        `;
+        
+        // Имитируем загрузку файла (в реальном приложении здесь будет fetch запрос к серверу)
+        setTimeout(() => {
+            // В реальном приложении здесь должен быть fetch запрос:
+            // fetch(article.file)
+            //     .then(response => response.text())
+            //     .then(html => {
+            //         articleContent.innerHTML = html;
+            //     })
+            
+            // Для демонстрации используем встроенные данные
+            const demoContent = getDemoArticleContent(article);
+            articleContent.innerHTML = demoContent;
+            
+        }, 500);
+    }
+    
+    // Демонстрационные данные для статей
+    function getDemoArticleContent(article) {
+        const articlesData = {
+            1: `
+                <div class="article">
+                    <h1>История калькуляторов</h1>
+                    <hr>
+                    <img src="https://via.placeholder.com/800x300/007bff/ffffff?text=История+калькуляторов" class="img-fluid mb-4" alt="История калькуляторов">
+                    <p class="lead">Калькуляторы прошли долгий путь от простых счетных палочек до современных вычислительных устройств.</p>
+                    
+                    <h2>Древние времена</h2>
+                    <p>Первыми инструментами для счета были пальцы рук, затем появились счетные палочки и камешки. В Древнем Вавилоне использовали абак — первую известную счетную доску.</p>
+                    
+                    <h2>Средневековье</h2>
+                    <p>В средневековой Европе широко использовались счетные жетоны и счетные доски (шотландский абак). В России счеты появились в XVI веке и использовались вплоть до конца XX века.</p>
+                    
+                    <div class="alert alert-info mt-3">
+                        <strong>Интересный факт:</strong> Слово "калькулятор" происходит от латинского "calculare" (считать) и "calculus" (камешек).
+                    </div>
+                </div>
+            `,
+            2: `
+                <div class="article">
+                    <h1>Механические калькуляторы</h1>
+                    <hr>
+                    <img src="https://via.placeholder.com/800x300/28a745/ffffff?text=Механические+калькуляторы" class="img-fluid mb-4" alt="Механические калькуляторы">
+                    
+                    <h2>Паскалина (1642 год)</h2>
+                    <p>Блез Паскаль изобрел первую механическую счетную машину, способную складывать и вычитать числа. Устройство использовало систему шестеренок и было предназначено для помощи отцу-налоговому инспектору.</p>
+                    
+                    <h2>Арифмометр Однера (1874 год)</h2>
+                    <p>Вилльгодт Однер создал один из самых успешных механических калькуляторов - арифмометр, который выпускался до 1970-х годов.</p>
+                    
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5>Интересные факты:</h5>
+                            <ul>
+                                <li>Арифмометры могли выполнять 4 основных действия</li>
+                                <li>Некоторые модели весили до 20 кг</li>
+                                <li>Использовались в бухгалтерии до появления электронных калькуляторов</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `,
+            3: `
+                <div class="article">
+                    <h1>Электронные калькуляторы</h1>
+                    <hr>
+                    <img src="https://via.placeholder.com/800x300/ffc107/000000?text=Электронные+калькуляторы" class="img-fluid mb-4" alt="Электронные калькуляторы">
+                    
+                    <h2>Эра транзисторов (1960-е)</h2>
+                    <p>Первые электронные калькуляторы использовали транзисторы вместо механических частей. Они были большими, дорогими и потребляли много энергии.</p>
+                    
+                    <h2>Микросхемы (1970-е)</h2>
+                    <p>Изобретение микропроцессоров произвело революцию в мире калькуляторов. Устройства стали компактными, дешевыми и доступными для массового потребителя.</p>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5>Первый карманный калькулятор</h5>
+                                    <p>Canon Pocketronic (1970) - первый карманный калькулятор. Он использовал печатающую головку вместо дисплея!</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5>Массовое производство</h5>
+                                    <p>К 1975 году цена калькулятора упала с $1000 до $20-30, что сделало их доступными для всех.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            4: `
+                <div class="article">
+                    <h1>Современные калькуляторы</h1>
+                    <hr>
+                    <img src="https://via.placeholder.com/800x300/17a2b8/ffffff?text=Современные+калькуляторы" class="img-fluid mb-4" alt="Современные калькуляторы">
+                    
+                    <h2>Инженерные калькуляторы</h2>
+                    <p>Современные инженерные калькуляторы могут выполнять сотни различных функций: тригонометрические, логарифмические, вычисления с комплексными числами, решение уравнений.</p>
+                    
+                    <h2>Графические калькуляторы</h2>
+                    <p>Графические калькуляторы отображают графики функций, имеют большие дисплеи и могут программироваться. Популярны в образовании и инженерии.</p>
+                    
+                    <h2>Программируемые калькуляторы</h2>
+                    <p>Современные калькуляторы часто имеют возможность программирования, память для хранения формул и подключение к компьютеру.</p>
+                    
+                    <div class="progress mt-3">
+                        <div class="progress-bar" style="width: 75%">Эволюция калькуляторов - 75%</div>
+                    </div>
+                </div>
+            `,
+            5: `
+                <div class="article">
+                    <h1>Будущее вычислительных устройств</h1>
+                    <hr>
+                    <img src="https://via.placeholder.com/800x300/dc3545/ffffff?text=Будущее+калькуляторов" class="img-fluid mb-4" alt="Будущее калькуляторов">
+                    
+                    <h2>Искусственный интеллект</h2>
+                    <p>Калькуляторы будущего будут использовать ИИ для понимания естественного языка и решения сложных математических задач.</p>
+                    
+                    <h2>Голосовое управление</h2>
+                    <p>Интеграция с голосовыми помощниками позволит решать уравнения без ввода данных с клавиатуры.</p>
+                    
+                    <h2>Облачные вычисления</h2>
+                    <p>Калькуляторы будут подключаться к облачным серверам для выполнения сверхсложных вычислений в реальном времени.</p>
+                    
+                    <blockquote class="blockquote mt-3">
+                        <p class="mb-0">Калькуляторы эволюционируют вместе с технологиями, оставаясь незаменимым инструментом в образовании и профессиональной деятельности.</p>
+                        <footer class="blockquote-footer">Из лекции по истории вычислительной техники</footer>
+                    </blockquote>
+                    
+                    <div class="alert alert-success mt-3">
+                        <h5>Добро пожаловать в Музей Калькуляторов!</h5>
+                        <p>Мы постоянно пополняем нашу коллекцию статей о вычислительной технике.</p>
+                    </div>
+                </div>
+            `
+        };
+        
+        return articlesData[article.id] || `
+            <div class="article">
+                <h1>${article.title}</h1>
+                <hr>
+                <p>Содержимое статьи будет загружено из файла: ${article.file}</p>
+                <div class="alert alert-warning">
+                    <strong>Примечание:</strong> В реальном приложении здесь будет содержимое HTML-файла.
+                </div>
+            </div>
+        `;
+    }
+    
+    // Загружаем список статей при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        loadArticlesList();
+    });
+</script>
+{% endblock %}

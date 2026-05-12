@@ -13,6 +13,14 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 def index():
     return render_template('index.html', title='Главная страница')
 
+@app.route('/calculator')
+def calculator():
+    return render_template('calculator.html', title='Калькулятор')
+
+@app.route('/articles')
+def articles():
+    return render_template('article.html', title='Статьи')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
