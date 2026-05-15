@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Витрина | Музей Вычислительной Техники</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Базовые цвета и переменные */
+        :root {
+            --dark-bg: #0a0a0a;
+            --panel-bg: #161616;
+            --accent: #c5a059;
+            --accent-glow: rgba(197, 160, 89, 0.3);
+            --text-gray: #a0a0a0;
+            --retro-green: #90a955;
+            --danger: #e74c3c;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            background: radial-gradient(circle at top, #1b1b1b 0%, #0a0a0a 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding-bottom: 50px;
+        }
+
+        .accent-text { color: var(--accent); }
+
+        /* Определение анимаций */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bitPulse {
+            0% { box-shadow: 0 0 0px var(--accent); }
+            50% { box-shadow: 0 0 20px var(--accent); }
+            100% { box-shadow: 0 0 0px var(--accent); }
+        }
+
+        @keyframes valueJump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); color: #fff; text-shadow: 0 0 10px var(--accent); }
+        }
+
+        /* Навигационная панель */
+        .navbar-custom {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 1px solid #333;
+            padding: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-brand {
+            font-weight: 900;
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+        }
+
+        .nav-link {
+            color: var(--text-gray) !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 20px;
+            transition: 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent) !important;
+        }
+
+        /* Карточка экспоната */
+        .museum-item {
+            background: var(--panel-bg);
+            border: 1px solid #333;
+            padding: 60px 40px;
+            margin-bottom: 100px;
+            border-radius: 40px;
+            animation: slideIn 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+            position: relative;
+            overflow: hidden;
+            transition: 0.4s;
+        }
+
+        .museum-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+        }
+
+        .museum-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 5px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.5;
+        }
+
+        /* Стили калькулятора (Экспонат 1) */
+        .retro-calc-frame {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 30px;
+            background: #222;
+            border-radius: 25px;
+            width: 360px;
+            margin: 0 auto;
+            border: 3px solid #444;
+            box-shadow: 15px 15px 0px #000;
+        }
+
+        .retro-display {
+            grid-column: span 4;
+            background: var(--retro-green);
+            color: #051a05;
+            height: 90px;
+            font-family: 'Courier New', monospace;
+            font-size: 36px;
+            text-align: right;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 6px inset #444;
+            font-weight: bold;
+            box-shadow: inset 2px 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .btn-calc {
+            width: 100%; height: 65px;
+            border-radius: 12px; border: none;
+            background: #e0e0e0; font-weight: 900;
+            font-size: 1.4rem; color: #222;
+            box-shadow: 0 6px #999;
+            transition: all 0.1s;
+        }
+
+        .btn-calc:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px #666;
+        }
+
+        .btn-op { background: #f39c12; color: #fff; box-shadow: 0 6px #b37400; }
+        .btn-eq { background: var(--accent); color: #000; box-shadow: 0 6px #8c6d39; }
+        .btn-clr { background: var(--danger); color: #fff; box-shadow: 0 6px #a93226; }
+
+        /* Стили бинарных ячеек (Экспонат 2) */
+        .bit-cell {
+            width: 65px; height: 95px;
+            background: #111; border: 2px solid var(--accent);
+            display: inline-flex; justify-content: center;
+            align-items: center; font-size: 2.8rem;
+            margin: 8px; cursor: pointer; border-radius: 10px;
+            user-select: none; transition: 0.3s;
+        }
+
+        .bit-active {
+            background: var(--accent); color: #000;
+            animation: bitPulse 0.6s infinite;
+        }
+
+        .animate-jump {
+            display: inline-block;
+            animation: valueJump 0.4s ease;
+        }
+
+        /* Стили римского арифмометра (Экспонат 3) */
+        .roman-box {
+            padding: 40px; background: #0a0a0a;
+            border: 1px solid #333; border-radius: 20px;
+            box-shadow: inset 0 0 20px #000;
+        }
+
+        .roman-scr {
+            background: #111; color: var(--accent);
+            font-family: 'Georgia', serif; padding: 40px;
+            font-size: 3.2rem; text-align: center;
+            border-bottom: 2px solid var(--accent);
+            min-height: 160px; margin-bottom: 30px;
+        }
+
+        .roman-btn {
+            width: 75px; height: 75px; margin: 10px;
+            border-radius: 50%; border: 2px solid var(--accent);
+            background: transparent; color: var(--accent);
+            font-weight: bold; transition: 0.3s;
+        }
+
+        .roman-btn:hover {
+            background: var(--accent); color: #000;
+            transform: scale(1.1) rotate(15deg);
+        }
+
+        /* Футер страницы */
+        footer {
+            padding: 50px; text-align: center;
+            border-top: 1px solid #222; color: #444;
+            font-size: 0.9rem; margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">CALC<span class="accent-text">MUSEUM</span></a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Главная</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{{ url_for('showcase') }}">Витрина</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('article') }}">История</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="text-center mb-5 display-4 fw-bold">Интерактивная <span class="accent-text">Витрина</span></h1>
+
+        <div class="museum-item" style="animation-delay: 0.1s;">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="accent-text mb-4">Экспонат №1: Модель 1974 года</h2>
+                    <p class="fs-5 text-secondary">Этот калькулятор воссоздает работу ранних карманных моделей. Обратите внимание на характерный шрифт и отсутствие сложных функций. Только арифметика, только хардкор.</p>
+                    <div class="alert alert-warning bg-dark border-warning text-warning mt-4">
+                        <strong>Миссия:</strong> Попробуйте произвести вычисление с делением на ноль.
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="retro-calc-frame">
+                        <div id="disp1" class="retro-display">0</div>
+                        <button class="btn-calc" onclick="add1('7')">7</button>
+                        <button class="btn-calc" onclick="add1('8')">8</button>
+                        <button class="btn-calc" onclick="add1('9')">9</button>
+                        <button class="btn-calc btn-op" onclick="op1('/')">/</button>
+                        <button class="btn-calc" onclick="add1('4')">4</button>
+                        <button class="btn-calc" onclick="add1('5')">5</button>
+                        <button class="btn-calc" onclick="add1('6')">6</button>
+                        <button class="btn-calc btn-op" onclick="op1('*')">*</button>
+                        <button class="btn-calc" onclick="add1('1')">1</button>
+                        <button class="btn-calc" onclick="add1('2')">2</button>
+                        <button class="btn-calc" onclick="add1('3')">3</button>
+                        <button class="btn-calc btn-op" onclick="op1('-')">-</button>
+                        <button class="btn-calc btn-clr" onclick="clr1()">C</button>
+                        <button class="btn-calc" onclick="add1('0')">0</button>
+                        <button class="btn-calc btn-eq" onclick="res1()">=</button>
+                        <button class="btn-calc btn-op" onclick="op1('+')">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="museum-item" style="animation-delay: 0.3s;">
+            <div class="row align-items-center">
+                <div class="col-lg-6 order-lg-2">
+                    <h2 class="accent-text mb-4">Экспонат №2: Логика процессора</h2>
+                    <p class="fs-5 text-secondary">Внутри любого компьютера числа хранятся в виде нулей и единиц. Здесь вы можете вручную переключать биты и видеть, как они превращаются в обычные числа.</p>
+                    <p class="text-muted small">8-битная система позволяет закодировать числа от 0 до 255.</p>
+                </div>
+                <div class="col-lg-6 order-lg-1 text-center">
+                    <div id="bits" class="d-flex justify-content-center flex-wrap"></div>
+                    <div class="mt-4 display-4">Значение: <span id="dec" class="accent-text fw-bold">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="museum-item" style="animation-delay: 0.5s;">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="accent-text mb-4">Экспонат №3: Римский арифмометр</h2>
+                    <p class="fs-5 text-secondary">Математика античности. В этой системе не существовало концепции нуля. Попробуйте сложить латинские числа и увидите результат преобразования.</p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="roman-box">
+                        <div class="roman-scr">
+                            <div id="rD">Nihil</div>
+                            <div id="rH" style="font-size: 1.2rem; color: #555;">0</div>
+                        </div>
+                        <div class="text-center">
+                            <button class="roman-btn" onclick="ar('I')">I</button>
+                            <button class="roman-btn" onclick="ar('V')">V</button>
+                            <button class="roman-btn" onclick="ar('X')">X</button>
+                            <button class="roman-btn" onclick="ar('L')">L</button>
+                            <button class="roman-btn" onclick="ar('C')">C</button>
+                            <button class="roman-btn" onclick="ar('D')">D</button>
+                            <button class="roman-btn" onclick="ar('M')">M</button>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-center gap-3">
+                            <button class="roman-btn btn-op" onclick="or('+')">+</button>
+                            <button class="roman-btn btn-op" onclick="or('-')">-</button>
+                            <button class="roman-btn btn-eq" onclick="rr()">=</button>
+                            <button class="roman-btn btn-clr border-0" onclick="cr()">CLS</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Музей Вычислительной Техники. Экспозиция обновлена.</p>
+    </footer>
+
+    <script>
+        /* Логика первого экспоната (калькулятор) */
+        let c1 = '', o1 = '', b1 = 0;
+        function add1(n) { c1 += n; document.getElementById('disp1').innerText = c1; }
+        function clr1() { c1 = ''; b1 = 0; o1 = ''; document.getElementById('disp1').innerText = '0'; }
+        function op1(o) { b1 = parseFloat(c1) || 0; c1 = ''; o1 = o; }
+        function res1() {
+            let v2 = parseFloat(c1) || 0, r = 0;
+            if(o1 === '+') r = b1 + v2;
+            else if(o1 === '-') r = b1 - v2;
+            else if(o1 === '*') r = b1 * v2;
+            else if(o1 === '/') r = v2 !== 0 ? b1 / v2 : 'ERR';
+            c1 = r.toString(); document.getElementById('disp1').innerText = c1;
+        }
+
+        /* Логика второго экспоната (бинарная система) */
+        let bd = [0,0,0,0,0,0,0,0];
+        function rb() {
+            const f = document.getElementById('bits'); f.innerHTML = '';
+            bd.forEach((b, i) => {
+                const e = document.createElement('div');
+                e.className = `bit-cell ${b ? 'bit-active' : ''}`;
+                e.innerText = b;
+                e.onclick = () => { 
+                    bd[i] = bd[i] ? 0 : 1; rb(); 
+                    const d = document.getElementById('dec');
+                    d.innerText = parseInt(bd.join(''), 2);
+                    d.classList.remove('animate-jump'); void d.offsetWidth; d.classList.add('animate-jump');
+                };
+                f.appendChild(e);
+            });
+        }
+        rb();
+
+        /* Логика третьего экспоната (римские числа) */
+        let rs = '', rb2 = 0, ro = '';
+        const rm = {I:1, V:5, X:10, L:50, C:100, D:500, M:1000};
+        
+        /* Перевод римских в десятичные */
+        function rtd(s) {
+            let v = 0;
+            for(let i=0; i<s.length; i++) {
+                let s1 = rm[s[i]], s2 = rm[s[i+1]];
+                s1 < s2 ? v -= s1 : v += s1;
+            }
+            return v || 0;
+        }
+        
+        /* Перевод десятичных в римские */
+        function dtr(n) {
+            if(n <= 0) return "Nihil";
+            const l = {M:1000,CM:900,D:500,CD:400,C:100,XC:90,L:50,XL:40,X:10,IX:9,V:5,IV:4,I:1};
+            let r = ''; for(let i in l) { while(n >= l[i]) { r += i; n -= l[i]; } }
+            return r;
+        }
+        
+        /* Функции управления вводом */
+        function ar(c) { rs += c; sr(); }
+        function or(o) { rb2 = rtd(rs); rs = ''; ro = o; }
+        function rr() {
+            let v2 = rtd(rs), r = ro === '+' ? rb2 + v2 : rb2 - v2;
+            let f = dtr(r); document.getElementById('rD').innerText = f;
+            document.getElementById('rH').innerText = r; rs = f === 'Nihil' ? '' : f;
+        }
+        function cr() { rs = ''; rb2 = 0; ro = ''; sr(); }
+        function sr() {
+            document.getElementById('rD').innerText = rs || 'Nihil';
+            document.getElementById('rH').innerText = rtd(rs);
+        }
+    </script>
+</body>
+</html>
