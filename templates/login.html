@@ -1,18 +1,146 @@
-{% extends "base.html" %}
-
-{% block content %}
-    <form action="" method="post" novalidate>
-        <div>
-            {{ form.csrf_token }}
-        </div>
-        {% for field in form if field.name != 'csrf_token' %}
-            <div>
-                {{ field.label() }}
-                {{ field() }}
-                {% for error in field.errors %}
-                    <div class="error">{{ error }}</div>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход | Музей Вычислительной Техники</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --dark-bg: #0a0a0a;
+            --panel-bg: #161616;
+            --accent: #c5a059;
+            --text-gray: #a0a0a0;
+            --glow: rgba(197, 160, 89, 0.3);
+        }
+        body {
+            background-color: var(--dark-bg);
+            color: #ffffff;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            background: radial-gradient(circle at center, #1b1b1b 0%, #0a0a0a 100%);
+        }
+        .login-card {
+            background: var(--panel-bg);
+            border: 1px solid #333;
+            border-radius: 30px;
+            padding: 50px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
+        }
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+        h2 {
+            color: var(--accent);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .form-label {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-control {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 12px 15px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+        .form-control:focus {
+            background: #121212;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--glow);
+            color: #fff;
+        }
+        .btn-login {
+            background: var(--accent);
+            color: #000;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 20px;
+            transition: 0.4s;
+            cursor: pointer;
+        }
+        .btn-login:hover {
+            background: #e0b86d;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px var(--glow);
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        .error-msg {
+            color: #ff4d4d;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            text-align: center;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Доступ к архиву</h2>
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control", placeholder="Введите email") }}
+                {% for error in form.email.errors %}
+                    <div class="error-msg">{{ error }}</div>
                 {% endfor %}
             </div>
-        {% endfor %}
-    </form>
-{% endblock %}
+            <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", placeholder="••••••••") }}
+                {% for error in form.password.errors %}
+                    <div class="error-msg">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3 form-check">
+                {{ form.remember_me(class="form-check-input") }}
+                {{ form.remember_me.label(class="form-check-label", style="color: var(--text-gray); font-size: 0.85rem;") }}
+            </div>
+            {{ form.submit(class="btn-login") }}
+            {% if message %}
+                <div class="error-msg">{{ message }}</div>
+            {% endif %}
+        </form>
+        <a href="/register" class="back-link" style="color: var(--accent); font-weight: bold;">Зарегистрироваться</a>
+        <a href="/" class="back-link">← Вернуться на главную</a>
+    </div>
+</body>
+</html>
