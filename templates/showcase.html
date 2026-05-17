@@ -15,6 +15,7 @@
             --text-gray: #a0a0a0;
             --retro-green: #90a955;
             --danger: #e74c3c;
+            --quantum-blue: #00d2ff;
         }
 
         body {
@@ -36,14 +37,20 @@
         }
 
         @keyframes bitPulse {
-            0% { box-shadow: 0 0 0px var(--accent); }
-            50% { box-shadow: 0 0 20px var(--accent); }
-            100% { box-shadow: 0 0 0px var(--accent); }
+            0% { box-shadow: 0 0px 0px var(--accent); }
+            50% { box-shadow: 0 0px 20px var(--accent); }
+            100% { box-shadow: 0 0px 0px var(--accent); }
         }
 
         @keyframes valueJump {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); color: #fff; text-shadow: 0 0 10px var(--accent); }
+        }
+
+        @keyframes quantumSpin {
+            0% { transform: rotate(0deg); border-color: var(--quantum-blue); }
+            50% { border-color: var(--accent); box-shadow: 0 0 15px var(--accent); }
+            100% { transform: rotate(360deg); border-color: var(--quantum-blue); }
         }
 
         /* Навигационная панель */
@@ -98,7 +105,7 @@
             opacity: 0.5;
         }
 
-        /* Стили калькулятора (Экспонат 1) */
+        /* Стили калькулятора (Экспонат 1, 4, 5) */
         .retro-calc-frame {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -110,6 +117,11 @@
             margin: 0 auto;
             border: 3px solid #444;
             box-shadow: 15px 15px 0px #000;
+        }
+
+        .hex-calc-frame {
+            grid-template-columns: repeat(5, 1fr);
+            width: 420px;
         }
 
         .retro-display {
@@ -125,6 +137,21 @@
             border: 6px inset #444;
             font-weight: bold;
             box-shadow: inset 2px 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .hex-span-5 { grid-column: span 5; }
+
+        .rpn-display-split {
+            grid-column: span 4;
+            background: #111;
+            color: var(--accent);
+            border: 3px solid #333;
+            border-radius: 12px;
+            padding: 10px 15px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            text-align: left;
+            margin-bottom: 15px;
         }
 
         .btn-calc {
@@ -144,9 +171,10 @@
         .btn-op { background: #f39c12; color: #fff; box-shadow: 0 6px #b37400; }
         .btn-eq { background: var(--accent); color: #000; box-shadow: 0 6px #8c6d39; }
         .btn-clr { background: var(--danger); color: #fff; box-shadow: 0 6px #a93226; }
+        .btn-hex { background: #34495e; color: #fff; box-shadow: 0 6px #2c3e50; }
 
-        /* Стили бинарных ячеек (Экспонат 2) */
-        .bit-cell {
+        /* Стили бинарных и троичных ячеек (Экспонат 2, 6) */
+        .bit-cell, .trit-cell {
             width: 65px; height: 95px;
             background: #111; border: 2px solid var(--accent);
             display: inline-flex; justify-content: center;
@@ -159,6 +187,9 @@
             background: var(--accent); color: #000;
             animation: bitPulse 0.6s infinite;
         }
+
+        .trit-1 { background: rgba(197, 160, 89, 0.4); color: #fff; }
+        .trit-2 { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
 
         .animate-jump {
             display: inline-block;
@@ -192,11 +223,31 @@
             transform: scale(1.1) rotate(15deg);
         }
 
-        /* Футер страницы */
-        footer {
-            padding: 50px; text-align: center;
-            border-top: 1px solid #222; color: #444;
-            font-size: 0.9rem; margin-top: 50px;
+        /* Квантовые кубиты (Экспонат 7) */
+        .qubit-container {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .qubit {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            border: 3px dashed var(--quantum-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.3s;
+        }
+
+        .qubit.superposition {
+            animation: quantumSpin 2s linear infinite;
+            color: var(--quantum-blue);
         }
     </style>
 </head>
@@ -251,7 +302,7 @@
             </div>
         </div>
 
-        <div class="museum-item" style="animation-delay: 0.3s;">
+        <div class="museum-item" style="animation-delay: 0.2s;">
             <div class="row align-items-center">
                 <div class="col-lg-6 order-lg-2">
                     <h2 class="accent-text mb-4">Экспонат №2: Логика процессора</h2>
@@ -265,7 +316,7 @@
             </div>
         </div>
 
-        <div class="museum-item" style="animation-delay: 0.5s;">
+        <div class="museum-item" style="animation-delay: 0.3s;">
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <h2 class="accent-text mb-4">Экспонат №3: Римский арифмометр</h2>
@@ -296,10 +347,111 @@
                 </div>
             </div>
         </div>
+
+        <div class="museum-item" style="animation-delay: 0.4s;">
+            <div class="row align-items-center">
+                <div class="col-lg-6 order-lg-2">
+                    <h2 class="accent-text mb-4">Экспонат №4: Стековый калькулятор RPN</h2>
+                    <p class="fs-5 text-secondary">Принцип работы знаменитых советских программируемых микрокалькуляторов (Б3-34, МК-61). Здесь нет кнопки «Равно». Числа помещаются в стек кнопкой ввода <span class="badge bg-secondary">↑</span>, после чего применяется операция.</p>
+                </div>
+                <div class="col-lg-6 order-lg-1">
+                    <div class="retro-calc-frame">
+                        <div class="rpn-display-split">
+                            <div style="color: #666;">Регистр Y: <span id="rpnY" style="color: #fff;">0</span></div>
+                            <div style="font-size: 1.5rem; font-weight: bold;">Регистр X: <span id="rpnX">0</span></div>
+                        </div>
+                        <button class="btn-calc" onclick="add4('7')">7</button>
+                        <button class="btn-calc" onclick="add4('8')">8</button>
+                        <button class="btn-calc" onclick="add4('9')">9</button>
+                        <button class="btn-calc btn-op" onclick="op4('/')">/</button>
+                        <button class="btn-calc" onclick="add4('4')">4</button>
+                        <button class="btn-calc" onclick="add4('5')">5</button>
+                        <button class="btn-calc" onclick="add4('6')">6</button>
+                        <button class="btn-calc btn-op" onclick="op4('*')">*</button>
+                        <button class="btn-calc" onclick="add4('1')">1</button>
+                        <button class="btn-calc" onclick="add4('2')">2</button>
+                        <button class="btn-calc" onclick="add4('3')">3</button>
+                        <button class="btn-calc btn-op" onclick="op4('-')">-</button>
+                        <button class="btn-calc btn-clr" onclick="clr4()">C</button>
+                        <button class="btn-calc" onclick="add4('0')">0</button>
+                        <button class="btn-calc btn-eq" onclick="enter4()">↑</button>
+                        <button class="btn-calc btn-op" onclick="op4('+')">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="museum-item" style="animation-delay: 0.5s;">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="accent-text mb-4">Экспонат №5: Шестнадцатеричный сумматор</h2>
+                    <p class="fs-5 text-secondary">Калькулятор, оперирующий в системе счисления Base-16. Незаменимый инструмент низкоуровневых инженеров. Позволяет использовать литеры <span class="accent-text fw-bold">A, B, C, D, E, F</span> как полноценные цифры (10-15).</p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="retro-calc-frame hex-calc-frame">
+                        <div id="disp5" class="retro-display hex-span-5">0</div>
+                        <button class="btn-calc btn-hex" onclick="add5('A')">A</button>
+                        <button class="btn-calc" onclick="add5('7')">7</button>
+                        <button class="btn-calc" onclick="add5('8')">8</button>
+                        <button class="btn-calc" onclick="add5('9')">9</button>
+                        <button class="btn-calc btn-op" onclick="op5('/')">/</button>
+                        <button class="btn-calc btn-hex" onclick="add5('B')">B</button>
+                        <button class="btn-calc" onclick="add5('4')">4</button>
+                        <button class="btn-calc" onclick="add5('5')">5</button>
+                        <button class="btn-calc" onclick="add5('6')">6</button>
+                        <button class="btn-calc btn-op" onclick="op5('*')">*</button>
+                        <button class="btn-calc btn-hex" onclick="add5('C')">C</button>
+                        <button class="btn-calc" onclick="add5('1')">1</button>
+                        <button class="btn-calc" onclick="add5('2')">2</button>
+                        <button class="btn-calc" onclick="add5('3')">3</button>
+                        <button class="btn-calc btn-op" onclick="op5('-')">-</button>
+                        <button class="btn-calc btn-hex" onclick="add5('D')">D</button>
+                        <button class="btn-calc btn-hex" onclick="add5('E')">E</button>
+                        <button class="btn-calc btn-hex" onclick="add5('F')">F</button>
+                        <button class="btn-calc" onclick="add5('0')">0</button>
+                        <button class="btn-calc btn-op" onclick="op5('+')">+</button>
+                        <button class="btn-calc btn-clr hex-span-5 mt-2" onclick="clr5()">ОЧИСТИТЬ КЭШ (C)</button>
+                        <button class="btn-calc btn-eq hex-span-5 mt-1" onclick="res5()">=</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="museum-item" style="animation-delay: 0.6s;">
+            <div class="row align-items-center">
+                <div class="col-lg-6 order-lg-2">
+                    <h2 class="accent-text mb-4">Экспонат №6: Троичная логика ЭВМ «Сетунь»</h2>
+                    <p class="fs-5 text-secondary">Реплика регистра советской экспериментальной машины «Сетунь» (1958 г.). Каждая ячейка оперирует тремя состояниями (тритами): <span class="text-danger">0</span>, <span class="text-warning">1</span> и <span class="text-success">2</span>.</p>
+                </div>
+                <div class="col-lg-6 order-lg-1 text-center">
+                    <div id="trits" class="d-flex justify-content-center flex-wrap"></div>
+                    <div class="mt-4 display-4">В десятичной системе: <span id="ternaryDec" class="accent-text fw-bold">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="museum-item" style="animation-delay: 0.7s;">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="accent-text mb-4">Экспонат №7: Квантовый мини-симулятор</h2>
+                    <p class="fs-5 text-secondary">Загляните в будущее. Нажмите на кубит, чтобы перевести его в состояние суперпозиции <span class="badge bg-info">H</span>. При клике на кнопку «Измерить» произойдет декогеренция (коллапс) квантовой функции в случайное двоичное число.</p>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="qubit-container">
+                        <div id="q0" class="qubit" onclick="toggleQubit(0)">|0⟩</div>
+                        <div id="q1" class="qubit" onclick="toggleQubit(1)">|0⟩</div>
+                        <div id="q2" class="qubit" onclick="toggleQubit(2)">|0⟩</div>
+                    </div>
+                    <button class="btn btn-lg btn-outline-warning px-5 py-3 fw-bold border-2" onclick="measureQuantum()">СДЕЛАТЬ ИЗМЕРЕНИЕ</button>
+                    <div class="mt-4 display-5">Результат коллапса: <span id="qResult" class="accent-text fw-bold">?</span></div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <footer>
-        <p>&copy; 2026 Музей Вычислительной Техники. Экспозиция обновлена.</p>
+    <footer class="text-center">
+        <p>CalcMuseum &copy; 2026.</p>
     </footer>
 
     <script>
@@ -340,7 +492,6 @@
         let rs = '', rb2 = 0, ro = '';
         const rm = {I:1, V:5, X:10, L:50, C:100, D:500, M:1000};
         
-        /* Перевод римских в десятичные */
         function rtd(s) {
             let v = 0;
             for(let i=0; i<s.length; i++) {
@@ -350,7 +501,6 @@
             return v || 0;
         }
         
-        /* Перевод десятичных в римские */
         function dtr(n) {
             if(n <= 0) return "Nihil";
             const l = {M:1000,CM:900,D:500,CD:400,C:100,XC:90,L:50,XL:40,X:10,IX:9,V:5,IV:4,I:1};
@@ -358,7 +508,6 @@
             return r;
         }
         
-        /* Функции управления вводом */
         function ar(c) { rs += c; sr(); }
         function or(o) { rb2 = rtd(rs); rs = ''; ro = o; }
         function rr() {
@@ -370,6 +519,97 @@
         function sr() {
             document.getElementById('rD').innerText = rs || 'Nihil';
             document.getElementById('rH').innerText = rtd(rs);
+        }
+
+        /* Логика четвертого экспоната (RPN) */
+        let rpnStackY = 0, rpnStackX = 0, rpnCurrentInput = '';
+        function updateRpnDisplay() {
+            document.getElementById('rpnX').innerText = rpnCurrentInput || rpnStackX;
+            document.getElementById('rpnY').innerText = rpnStackY;
+        }
+        function add4(n) { rpnCurrentInput += n; updateRpnDisplay(); }
+        function enter4() {
+            rpnStackY = rpnStackX;
+            rpnStackX = parseFloat(rpnCurrentInput) || 0;
+            rpnCurrentInput = '';
+            updateRpnDisplay();
+        }
+        function clr4() { rpnStackY = 0; rpnStackX = 0; rpnCurrentInput = ''; updateRpnDisplay(); }
+        function op4(op) {
+            if (rpnCurrentInput) enter4();
+            if(op === '+') rpnStackX = rpnStackY + rpnStackX;
+            else if(op === '-') rpnStackX = rpnStackY - rpnStackX;
+            else if(op === '*') rpnStackX = rpnStackY * rpnStackX;
+            else if(op === '/') rpnStackX = rpnStackX !== 0 ? rpnStackY / rpnStackX : 0;
+            rpnStackY = 0;
+            updateRpnDisplay();
+        }
+
+        /* Логика пятого экспоната (HEX Калькулятор) */
+        let c5 = '', o5 = '', b5 = 0;
+        function add5(n) { c5 += n; document.getElementById('disp5').innerText = c5; }
+        function clr5() { c5 = ''; b5 = 0; o5 = ''; document.getElementById('disp5').innerText = '0'; }
+        function op5(o) { b5 = parseInt(c5, 16) || 0; c5 = ''; o5 = o; }
+        function res5() {
+            let v2 = parseInt(c5, 16) || 0, r = 0;
+            if(o5 === '+') r = b5 + v2;
+            else if(o5 === '-') r = b5 - v2;
+            else if(o5 === '*') r = b5 * v2;
+            else if(o5 === '/') r = v2 !== 0 ? Math.floor(b5 / v2) : 0;
+            c5 = r.toString(16).toUpperCase();
+            document.getElementById('disp5').innerText = c5;
+        }
+
+        /* Логика шестого экспоната (Троичная система) */
+        let td = [0,0,0,0,0];
+        function renderTernary() {
+            const container = document.getElementById('trits'); container.innerHTML = '';
+            td.forEach((t, i) => {
+                const cell = document.createElement('div');
+                cell.className = `trit-cell ${t === 1 ? 'trit-1' : t === 2 ? 'trit-2' : ''}`;
+                cell.innerText = t;
+                cell.onclick = () => {
+                    td[i] = (td[i] + 1) % 3;
+                    renderTernary();
+                    let decimalValue = 0;
+                    td.forEach((val, idx) => {
+                        decimalValue += val * Math.pow(3, td.length - 1 - idx);
+                    });
+                    const dEl = document.getElementById('ternaryDec');
+                    dEl.innerText = decimalValue;
+                    dEl.classList.remove('animate-jump'); void dEl.offsetWidth; dEl.classList.add('animate-jump');
+                };
+                container.appendChild(cell);
+            });
+        }
+        renderTernary();
+
+        /* Логика седьмого экспоната (Квантовый симулятор) */
+        let qubits = [0, 0, 0];
+        function toggleQubit(idx) {
+            const qEl = document.getElementById(`q${idx}`);
+            if (qubits[idx] === 0) {
+                qubits[idx] = 1; qEl.innerText = '|1⟩'; qEl.className = 'qubit';
+            } else if (qubits[idx] === 1) {
+                qubits[idx] = 'H'; qEl.innerText = '|H⟩'; qEl.className = 'qubit superposition';
+            } else {
+                qubits[idx] = 0; qEl.innerText = '|0⟩'; qEl.className = 'qubit';
+            }
+        }
+        function measureQuantum() {
+            let decimalResult = 0;
+            let collapseString = '';
+            for (let i = 0; i < 3; i++) {
+                let finalBit = qubits[i];
+                if (finalBit === 'H') {
+                    finalBit = Math.random() < 0.5 ? 0 : 1;
+                }
+                collapseString += finalBit;
+                decimalResult += finalBit * Math.pow(2, 2 - i);
+            }
+            const resEl = document.getElementById('qResult');
+            resEl.innerText = `${collapseString} (${decimalResult} в дес.)`;
+            resEl.classList.remove('animate-jump'); void resEl.offsetWidth; resEl.classList.add('animate-jump');
         }
     </script>
 </body>

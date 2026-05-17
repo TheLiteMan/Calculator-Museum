@@ -157,6 +157,20 @@
             border-color: #fff;
         }
 
+        /* Стиль для кнопки добавления нового калькулятора */
+        .btn-add-custom {
+            background: transparent;
+            color: #ffc107;
+            border: 2px dashed #ffc107;
+        }
+
+        .btn-add-custom:hover {
+            background: rgba(255, 193, 7, 0.1);
+            color: #fff;
+            border-color: #fff;
+            transform: translateY(-3px);
+        }
+
         .feature-grid {
             margin-top: 80px;
             display: grid;
@@ -189,7 +203,6 @@
 </head>
 <body>
 
-    <!-- Динамическая табличка входа -->
     {% if current_user.is_authenticated %}
     <a href="{{ url_for('logout') }}" class="auth-corner">
         <span>Выйти ({{ current_user.name }})</span>
@@ -214,9 +227,22 @@
                         <h1 class="museum-title">CALC<span>MUSEUM</span></h1>
                         <p class="sub-lead">Цифровая сокровищница: от первых счетов до квантовых вычислений</p>
 
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} bg-dark border-{{ category }} text-light mb-4">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
                         <div class="btn-group-custom">
                             <a href="{{ url_for('showcase') }}" class="nav-btn btn-primary-custom">Перейти в зал витрин</a>
+                            <a href="{{ url_for('user_exhibits') }}" class="nav-btn btn-secondary-custom">Народная выставка</a>
                             <a href="{{ url_for('article') }}" class="nav-btn btn-secondary-custom">Архив истории</a>
+                                                
+                            {% if current_user.is_authenticated %}
+                                <a href="{{ url_for('add_calculator') }}" class="nav-btn btn-add-custom">Добавить свой экспонат</a>
+                            {% endif %}
                         </div>
 
                         <div class="feature-grid">
