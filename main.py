@@ -1,3 +1,4 @@
+import os
 import datetime
 import logging
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, abort
@@ -21,6 +22,8 @@ from api import exhibits_resource
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'calc_museum_secure_ultra_key_2026'
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=30)
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 api = Api(app)
 
@@ -62,7 +65,9 @@ def internal_error(error):
 @app.route('/')
 def index():
     app.logger.info("Посещение главной страницы")
-    return render_template('index.html')
+    db_sess = db_session.create_session()
+    exhibits = db_sess.query(Exhibit).filter(Exhibit.is_visible == True).order_by(Exhibit.creation_year.desc()).all()
+    return render_template('index.html', exhibits=exhibits)
 
 
 @app.route('/article')
@@ -87,12 +92,22 @@ def showcase():
     return render_template('showcase.html', exhibits=exhibits, search=search_query, current_type=filter_type)
 
 
+@app.route('/user-exhibits')
+def user_exhibits():
+    db_sess = db_session.create_session()
+    exhibits = db_sess.query(Exhibit).filter(
+        Exhibit.is_visible == True, 
+        Exhibit.simulator_type == 'none'
+    ).order_by(Exhibit.id.desc()).all()
+    
+    return render_template('user_exhibits.html', exhibits=exhibits)
+
+
 @app.route('/exhibit/<int:exhibit_id>', methods=['GET', 'POST'])
 def exhibit_detail(exhibit_id):
     db_sess = db_session.create_session()
     exhibit = db_sess.query(Exhibit).get_or_404(exhibit_id)
     
-    # Увеличение счетчика просмотров
     exhibit.views_count += 1
     db_sess.commit()
     
@@ -117,7 +132,6 @@ def exhibit_detail(exhibit_id):
     return render_template('exhibit_view.html', exhibit=exhibit, form=form, feedbacks=feedbacks)
 
 
-# Исполнительный эндпоинт для работы интерактивных стендов симуляции через AJAX
 @app.route('/api/simulate/<string:sim_type>', methods=['POST'])
 def simulate_device(sim_type):
     data = request.json or {}
@@ -158,7 +172,6 @@ def simulate_device(sim_type):
 @app.route('/admin/exhibits', methods=['GET', 'POST'])
 @login_required
 def admin_exhibits_panel():
-    # Простейшая проверка прав: пусть админом будет первый зарегистрированный ID=1
     if current_user.id != 1:
         abort(403)
         
@@ -191,13 +204,11 @@ def register():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
-            flash("Введенные пароли не совпадают", "danger")
-            return render_template('register.html', form=form)
+            return render_template('register.html', form=form, error="Введенные пароли не совпадают")
         
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
-            flash("Пользователь с таким email адресом уже зарегистрирован", "danger")
-            return render_template('register.html', form=form)
+            return render_template('register.html', form=form, error="Пользователь с таким email адресом уже зарегистрирован")
         
         user = User(
             name=form.name.data,
@@ -225,7 +236,7 @@ def login():
             login_user(user, remember=form.remember_me.data)
             app.logger.info(f"Пользователь {user.email} вошел в систему")
             return redirect(url_for('index'))
-        flash("Неверное сочетание логина и/или пароля", "danger")
+        return render_template('login.html', form=form, error="Неверное сочетание логина и/или пароля")
     return render_template('login.html', form=form)
 
 
@@ -237,32 +248,76 @@ def logout():
     return redirect(url_for('index'))
 
 
-# Инициализация REST-API путей
 api.add_resource(exhibits_resource.ExhibitsListResource, '/api/v1/exhibits')
 api.add_resource(exhibits_resource.ExhibitsResource, '/api/v1/exhibits/<int:exhibit_id>')
 
 
 def setup_initial_data():
-    """Автоматическое наполнение базы данных базовыми экспонатами при первом запуске"""
     db_sess = db_session.create_session()
     if db_sess.query(Exhibit).first() is None:
         abacus = Exhibit(
             title="Древнеримский Абак",
-            short_description="Доска со специальными желобами для передвижения камешков.",
+            short_description="Доска со специающими желобами для передвижения камешков.",
             full_description="Первый в истории калькулятор...",
             creation_year=-500,
-            simulator_type="abacus"
+            simulator_type="abacus",
+            image_path="uploads/default_calc.jpg",
+            is_visible=True
         )
         pascalina = Exhibit(
             title="Паскалина Блеза Паскаля",
             short_description="Механическое колесное устройство для арифметики.",
             full_description="Создано великим ученым в 1642 году...",
             creation_year=1642,
-            simulator_type="pascalina"
+            simulator_type="pascalina",
+            image_path="uploads/default_calc.jpg",
+            is_visible=True
         )
         db_sess.add(abacus)
         db_sess.add(pascalina)
         db_sess.commit()
+
+
+@app.route('/add-calculator', methods=['GET', 'POST'])
+@login_required
+def add_calculator():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        short_description = request.form.get('short_description')
+        full_description = request.form.get('full_description')
+        creation_year = request.form.get('creation_year')
+        
+        simulator_type = request.form.get('simulator_type')
+        if not simulator_type or simulator_type.strip() == '':
+            simulator_type = 'none'
+        
+        file = request.files.get('image')
+        
+        if file and file.filename != '':
+            filename = f"{int(datetime.datetime.now().timestamp())}_{file.filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            db_image_path = f"uploads/{filename}"
+        else:
+            db_image_path = "uploads/default_calc.jpg"
+            
+        db_sess = db_session.create_session()
+        new_exhibit = Exhibit(
+            title=title,
+            short_description=short_description,
+            full_description=full_description,
+            creation_year=int(creation_year) if creation_year else 2026,
+            simulator_type=simulator_type,
+            image_path=db_image_path,
+            is_visible=True
+        )
+        
+        db_sess.add(new_exhibit)
+        db_sess.commit()
+        flash("Калькулятор успешно добавлен на народную выставку!", "success")
+        return redirect(url_for('user_exhibits'))
+            
+    return render_template('add_calculator.html')
 
 
 if __name__ == '__main__':
